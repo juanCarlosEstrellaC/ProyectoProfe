@@ -37,7 +37,7 @@ class PrincipalActivity : AppCompatActivity() {
             .setNegativeButton(getString(R.string.cancelar)) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setCancelable(false)
+            .setCancelable(false) // el usuario no puede dar click fuera y debe escoger la opcion.
             .create()
 
         dialog.show()
