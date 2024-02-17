@@ -1,11 +1,15 @@
 package com.uce.moviles.ui.activities
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.uce.moviles.R
 import com.uce.moviles.databinding.ActivityPrincipalBinding
 import com.uce.moviles.ui.adapters.NobelPrizeAdapter
@@ -23,16 +27,22 @@ class PrincipalActivity : AppCompatActivity() {
         binding = ActivityPrincipalBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initListeners()
-        initObservers()
+        initVariables("")
         initRecyclerView()
+        initObservers()
+        initListeners()
+        viewModel.getAllNobelPrizes()
 
-        // dialogos:
+        switpeRecyclerView()
+
+    }
+
+    private fun initVariables(mensajeError: String) {
         dialog = AlertDialog.Builder(this)
-            .setMessage(getString(R.string.carga_datos))
             .setTitle(getString(R.string.title_dialog))
-            .setPositiveButton(getString(R.string.aceptar)) { _, _ ->
-                viewModel.getAllNobelPrizes()
+            .setMessage(mensajeError)
+            .setPositiveButton(getString(R.string.aceptar)) { dialog, _ ->
+                dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.cancelar)) { dialog, _ ->
                 dialog.dismiss()
@@ -40,7 +50,6 @@ class PrincipalActivity : AppCompatActivity() {
             .setCancelable(false) // el usuario no puede dar click fuera y debe escoger la opcion.
             .create()
 
-        dialog.show()
     }
 
     private fun initObservers() {
@@ -52,7 +61,9 @@ class PrincipalActivity : AppCompatActivity() {
 
         viewModel.error.observe(this) {
             adapter.submitList(emptyList())
-            //adapter.notifyDataSetChanged()  lo quito xq tengo diffutil
+            initVariables(it)
+            dialog.show()
+
         }
     }
 
@@ -71,5 +82,37 @@ class PrincipalActivity : AppCompatActivity() {
             viewModel.getAllNobelPrizes()
             binding.swiperv.isRefreshing = false
         }
+
+        binding.etFiltro.addTextChangedListener { filtro ->
+            val listFilter = adapter.currentList.toList().filter { item ->
+                item.category.en.contains(filtro.toString())
+            }
+            adapter.submitList(listFilter)
+
+            if (filtro.isNullOrBlank()) {
+                viewModel.getAllNobelPrizes()
+
+            }
+        }
+    }
+
+    private fun switpeRecyclerView() {
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+                val list = adapter.currentList.toMutableList()
+                list.removeAt(position)
+                adapter.submitList(list)
+            }
+        }).attachToRecyclerView(binding.rvUsers)
     }
 }

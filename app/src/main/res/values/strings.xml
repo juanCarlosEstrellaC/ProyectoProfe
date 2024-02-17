@@ -13,7 +13,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="carga_datos">¿Desea iniciar con la carga de los datos?</string>
-    <string name="title_dialog">Mensaje de información</string>
+    <string name="title_dialog">Error en la carga</string>
     <string name="aceptar">Aceptar</string>
     <string name="cancelar">Cancelar</string>
 </resources>
